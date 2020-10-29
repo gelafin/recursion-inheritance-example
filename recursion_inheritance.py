@@ -7,6 +7,13 @@
 from random import randrange
 
 
+class Tile:
+    """defines a tile used for 2D tilemaps"""
+    def __init__(self, style='*'):
+        """initializes tile type"""
+        self.style = style
+
+
 class HeightMap:
     """defines a randomly generated heightmap shape"""
     def __init__(self, length, ceiling=None, terrain_type='gentle_hills'):
@@ -17,6 +24,8 @@ class HeightMap:
         :param ceiling: max height of sky and height of walls
         :param terrain_type: type of terrain to simulate. Default is gentle hills
         """
+        self._GROUND_TILE = Tile('*')
+        self._SKY_TILE = Tile(' ')
         self._WALL_VARIANCE = 1  # how much higher walls are than the apex. If ceiling is provided, walls == ceiling
 
         # if ceiling provided by caller, use that. Else, use the generated apex + 1 as the ceiling
@@ -105,6 +114,8 @@ class HeightMap:
         """
         # prepare variables used in loop
         ceiling = self._CEILING
+        ground_tile = self._GROUND_TILE.style
+        sky_tile = self._SKY_TILE.style
         heightmap_2D = []  # return value
 
         for height in self.get_non_negative_heights():  # iterates horizontally
@@ -113,11 +124,11 @@ class HeightMap:
 
             # assign terrain blocks
             for block in range(0, height):
-                column.append('*')  # adds vertically
+                column.append(ground_tile)  # adds vertically
 
             # assign air blocks
             for padding_block in range(height, ceiling):
-                column.append(' ')  # adds vertically
+                column.append(sky_tile)  # adds vertically
 
             # append new column to heightmap
             heightmap_2D.append(column)
@@ -165,6 +176,8 @@ class HeightMap:
 
         column_height = previous_height + variance
 
+        # TODO: enforce given ceiling. If column_height >= ceiling, then reduce column_height by its excess column_height -= excess (column_height - ceiling) and then -1 to leave a gap
+
         print('adding height', column_height)
 
         # add the new column
@@ -199,5 +212,5 @@ class HeightMap:
         return self.recursive_generate_heightmap(length, max_variance, heightmap, previous_height=starting_height)
 
 # test
-heightmap = HeightMap(10)
+heightmap = HeightMap(10, 10, terrain_type='mountains')
 heightmap.print()

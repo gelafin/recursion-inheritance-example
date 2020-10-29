@@ -81,10 +81,11 @@ class HeightMap:
         """returns list of height values, with 0 as a minimum value"""
         return self._non_negative_heights
 
-    def get_highest_point(self, heights=None):  # TODO: option to ignore wall
+    def get_highest_point(self, heights=None, ignore_wall=False):
         """
         returns highest point (apex) in heightmap
         :param heights: list of height values. If not provided, method will use the generated height values
+        :param ignore_wall: whether to exclude the wall value. Default is False
         :return maximum: highest point (apex) in heights
         """
         # if heights is not provided, assume caller wants the highest point of the generated height values
@@ -95,15 +96,16 @@ class HeightMap:
         maximum = heights[0]
 
         for height in heights:
-            if height > maximum:
+            if height > maximum and not (ignore_wall and height == self._WALL):
                 maximum = height
 
         return maximum
 
-    def get_lowest_point(self, heights=None):  # TODO: option to ignore wall
+    def get_lowest_point(self, heights=None, ignore_wall=False):
         """
         returns lowest point (nadir) in heightmap
         :param heights: list of height values. If not provided, method will use the generated height values
+        :param ignore_wall: whether to exclude the wall value. Default is False
         :return minimum: lowest point (nadir) in heights
         """
         # if heights is not provided, assume caller wants the lowest point of the generated height values
@@ -114,7 +116,7 @@ class HeightMap:
         minimum = heights[0]
 
         for height in heights:
-            if height < minimum:
+            if height < minimum and not (ignore_wall and height == self._WALL):
                 minimum = height
 
         return minimum

@@ -28,7 +28,7 @@ class Tile(PointsObject):
 
 class HeightMap:
     """defines a randomly generated heightmap shape"""
-    def __init__(self, length, ceiling=None, terrain_type='gentle_hills'):
+    def __init__(self, length, ceiling=None, terrain_type='gentle_hills'):  # TODO: dict of tile styles
         """
         generates and initializes the HeightMap's list of heights and a 2D representation
         :param length: length of height list to generate. First column is set to the axis value of 0 and last column
@@ -65,7 +65,7 @@ class HeightMap:
             self._WALL = self._CEILING
             self._non_negative_heights.append(self._WALL)
             self._height_values.append(self._WALL)
-        else:  # use apex + 1 as wall height
+        else:  # use apex + wall variance as wall height
             self._CEILING = self._WALL = self.get_highest_point(self._non_negative_heights) + self._WALL_VARIANCE
             self._non_negative_heights.append(self._WALL)
             self._height_values.append(self._WALL)
@@ -81,7 +81,7 @@ class HeightMap:
         """returns list of height values, with 0 as a minimum value"""
         return self._non_negative_heights
 
-    def get_highest_point(self, heights=None):
+    def get_highest_point(self, heights=None):  # TODO: option to ignore wall
         """
         returns highest point (apex) in heightmap
         :param heights: list of height values. If not provided, method will use the generated height values
@@ -100,7 +100,7 @@ class HeightMap:
 
         return maximum
 
-    def get_lowest_point(self, heights=None):
+    def get_lowest_point(self, heights=None):  # TODO: option to ignore wall
         """
         returns lowest point (nadir) in heightmap
         :param heights: list of height values. If not provided, method will use the generated height values
@@ -209,8 +209,6 @@ class HeightMap:
                 else:
                     heightmap[-1] += (excess + 1)
 
-        print('added height', heightmap[-1])
-
         # heightmap array mutated in-place on the way down the recursion rabbit hole
         return self.recursive_generate_heightmap(length, max_variance, heightmap, previous_height=column_height)
 
@@ -231,7 +229,6 @@ class HeightMap:
             max_variance = 1
 
         # initialize final return value with a given starting height
-        print('adding height 0')
         heightmap = [starting_height]
 
         # account for the extra column we just created
@@ -239,6 +236,7 @@ class HeightMap:
 
         return self.recursive_generate_heightmap(length, max_variance, heightmap, previous_height=starting_height)
 
-# test
-heightmap = HeightMap(10, 2, terrain_type='mountains')
-heightmap.print()
+if __name__ == '__main__':
+    # test
+    heightmap = HeightMap(10, terrain_type='mountains')
+    heightmap.print()

@@ -22,7 +22,7 @@ class HeightMap:
         # if ceiling provided by caller, use that. Else, use the generated apex + 1 as the ceiling
         if ceiling is not None:
             self._ceiling_provided = True
-            self._ceiling = ceiling
+            self._CEILING = ceiling
         else:
             self._ceiling_provided = False
 
@@ -35,25 +35,22 @@ class HeightMap:
         for height in self._height_values:
             if height < 0:
                 # shift to nonzero values by adding lowest value to all
-                self._non_negative_heights = [value - self.get_lowest_point() for value in self._height_values]
+                nadir = self.get_lowest_point(self._height_values)
+                self._non_negative_heights = [value - nadir for value in self._height_values]
                 break  # for efficiency
 
         # after generating non-negative height values, add a wall to show the boundary
         if self._ceiling_provided:  # use provided ceiling height as wall height
-            self._WALL = self._ceiling
+            self._WALL = self._CEILING
             self._non_negative_heights.append(self._WALL)
             self._height_values.append(self._WALL)
         else:  # use apex + 1 as wall height
-            self._ceiling = self._WALL = self.get_highest_point(self._non_negative_heights) + self.get_wall_variance()
+            self._CEILING = self._WALL = self.get_highest_point(self._non_negative_heights) + self._WALL_VARIANCE
             self._non_negative_heights.append(self._WALL)
-            self._height_values.append(self._WALL)  # TODO: eliminate get_wall_variance()? caps lock ceiling?
+            self._height_values.append(self._WALL)
 
         # after generating height values, make a 2D version
         self._heightmap_2D = self.make_2D_copy_above_ground()  # depends on self._non_negative_heights
-
-    def get_wall_variance(self):
-        """:return wall variance: how much higher walls are than the highest point (apex)"""
-        return self._WALL_VARIANCE
 
     def get_height_values(self):
         """returns height values"""
@@ -66,7 +63,7 @@ class HeightMap:
     def get_highest_point(self, heights=None):
         """
         returns highest point (apex) in heightmap
-        :param heights: list of height values
+        :param heights: list of height values. If not provided, method will use the generated height values
         :return maximum: highest point (apex) in heights
         """
         # if heights is not provided, assume caller wants the highest point of the generated height values
@@ -82,12 +79,20 @@ class HeightMap:
 
         return maximum
 
-    def get_lowest_point(self):
-        """returns lowest point (nadir) in heightmap"""
-        # default comparison to first height
-        minimum = self.get_height_values()[0]
+    def get_lowest_point(self, heights=None):
+        """
+        returns lowest point (nadir) in heightmap
+        :param heights: list of height values. If not provided, method will use the generated height values
+        :return minimum: lowest point (nadir) in heights
+        """
+        # if heights is not provided, assume caller wants the lowest point of the generated height values
+        if heights is None:
+            heights = self.get_height_values()
 
-        for height in self._height_values:
+        # default comparison to first height
+        minimum = heights[0]
+
+        for height in heights:
             if height < minimum:
                 minimum = height
 
@@ -99,7 +104,7 @@ class HeightMap:
         :return : a 2D version of the heightmap
         """
         # prepare variables used in loop
-        ceiling = self._ceiling
+        ceiling = self._CEILING
         heightmap_2D = []  # return value
 
         for height in self.get_non_negative_heights():  # iterates horizontally
@@ -122,7 +127,7 @@ class HeightMap:
     def print(self):
         """prints 2D heightmap list to terminal in ASCII-art style"""
         # guaranteed to be same length, so just grab the first one
-        ceiling = self._ceiling
+        ceiling = self._CEILING
 
         for block in range(ceiling - 1, 0 - 1, -1):  # print in reverse, since sky is stored at end
             printable_row = []

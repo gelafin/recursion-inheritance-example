@@ -1,17 +1,29 @@
 # Author: Mark Mendez
 # Date: 10/26/2020
-# Description: Defines a HeightMap class for generating heightmaps, contrived to show off impractical code examples
-#              which showcase knowledge of practical concepts, such as recursion, 2D list algorithms, and inheritance
+# Description: Defines classes for generating heightmaps, contrived around use of recursion, 2D list algorithms, and
+#              inheritance
 
 
 from random import randrange
 
-# TODO: try tile for inheritance
-class Tile:
+
+class PointsObject:
+    """defines an object that gives points when touched"""
+    def __init__(self, points=2):
+        """initializes the number of points this object gives"""
+        self.points = points
+
+
+class Tile(PointsObject):
     """defines a tile used for 2D tilemaps"""
     def __init__(self, style='*'):
-        """initializes tile type"""
-        self.style = style
+        """initializes tile type and points"""
+        super().__init__(points=1)
+        self._style = style
+
+    def get_style(self):
+        """returns tile style character"""
+        return self._style
 
 
 class HeightMap:
@@ -114,8 +126,8 @@ class HeightMap:
         """
         # prepare variables used in loop
         ceiling = self._CEILING
-        ground_tile = self._GROUND_TILE.style
-        sky_tile = self._SKY_TILE.style
+        ground_tile = self._GROUND_TILE.get_style()
+        sky_tile = self._SKY_TILE.get_style()
         heightmap_2D = []  # return value
 
         for height in self.get_non_negative_heights():  # iterates horizontally
@@ -178,10 +190,13 @@ class HeightMap:
 
         # enforce given ceiling, if applicable
         if self._ceiling_provided:
+            #
             if column_height >= self._CEILING:
                 # reduce column_height by its excess, and leave a gap
                 excess = column_height - self._CEILING
                 column_height -= (excess + 1)
+
+            # TODO: for wider ranges, enforce range is not more than ceiling, since nadir will be added to highest value
 
         print('adding height', column_height)
 

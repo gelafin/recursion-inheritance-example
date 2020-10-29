@@ -188,6 +188,9 @@ class HeightMap:
 
         column_height = previous_height + variance
 
+        # add the new column
+        heightmap.append(column_height)
+
         # enforce given ceiling, if applicable
         if self._ceiling_provided:
             # make sure column is not higher than given ceiling
@@ -201,15 +204,12 @@ class HeightMap:
             if heights_range >= self._CEILING:
                 # reduce range by column_height's excess (positive or negative), and leave a gap
                 excess = heights_range - self._CEILING
-                if column_height >= 0:  # TODO: why still adds heights outside ceiling?
-                    column_height -= (excess + 1)
+                if column_height >= 0:
+                    heightmap[-1] -= (excess + 1)
                 else:
-                    column_height += (excess + 1)
+                    heightmap[-1] += (excess + 1)
 
-        print('adding height', column_height)
-
-        # add the new column
-        heightmap.append(column_height)
+        print('added height', heightmap[-1])
 
         # heightmap array mutated in-place on the way down the recursion rabbit hole
         return self.recursive_generate_heightmap(length, max_variance, heightmap, previous_height=column_height)

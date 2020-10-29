@@ -17,33 +17,36 @@ class HeightMap:
         :param ceiling: max height of sky and height of walls
         :param terrain_type: type of terrain to simulate. Default is gentle hills
         """
-        self._WALL_VARIANCE = 1  # how much higher walls are than the apex
+        self._WALL_VARIANCE = 1  # how much higher walls are than the apex. If ceiling is provided, walls == ceiling
 
-        # if ceiling provided by caller, use that. Else, use the apex as the ceiling
-        need_ceiling = False
+        # if ceiling provided by caller, use that. Else, use the generated apex + 1 as the ceiling
         if ceiling is not None:
-            self._ceiling = self._WALL = ceiling + self._WALL_VARIANCE  # convenient to have different semantic terms
+            self._ceiling_provided = True
+            self._ceiling = ceiling
         else:
-            need_ceiling = True
+            self._ceiling_provided = False
 
         # generate list of height values
         starting_height = 0  # height of first column
         self._height_values = self.generate_heightmap(length, terrain_type, starting_height)
 
         # after generating height values, make another list guaranteed to have only non-negative values
-        self._non_negative_heights = self._height_values
+        self._non_negative_heights = self._height_values.copy()
         for height in self._height_values:
             if height < 0:
-                # shift to nonzero values by adding lowest value to all. Exclude the wall
-                self._non_negative_heights = ([value - self.get_lowest_point()
-                                               for value in self._height_values if value != self._WALL])
-                # restore the wall
-                self._non_negative_heights.append(self._WALL)
+                # shift to nonzero values by adding lowest value to all
+                self._non_negative_heights = [value - self.get_lowest_point() for value in self._height_values]
                 break  # for efficiency
 
-        # after generating non-negative height values, use the apex to find the ceiling if not provided by caller
-        if need_ceiling:
-            self._ceiling = self._WALL = self.get_highest_point() + self._WALL_VARIANCE  # TODO: circular dependency between need_ceiling _WALL instantiation and _non_negative_heights instantiation
+        # after generating non-negative height values, add a wall to show the boundary
+        if self._ceiling_provided:  # use provided ceiling height as wall height
+            self._WALL = self._ceiling
+            self._non_negative_heights.append(self._WALL)
+            self._height_values.append(self._WALL)
+        else:  # use apex + 1 as wall height
+            self._ceiling = self._WALL = self.get_highest_point(self._non_negative_heights) + self.get_wall_variance()
+            self._non_negative_heights.append(self._WALL)
+            self._height_values.append(self._WALL)  # TODO: eliminate get_wall_variance()? caps lock ceiling?
 
         # after generating height values, make a 2D version
         self._heightmap_2D = self.make_2D_copy_above_ground()  # depends on self._non_negative_heights
@@ -142,8 +145,6 @@ class HeightMap:
 
         # base case: if length has been reached, we're done
         if len(heightmap) >= length:
-            # add a wall to show the boundary
-            heightmap.append(self.get_highest_point(heightmap) + self.get_wall_variance())
             return heightmap
 
         # recursive case
@@ -184,6 +185,7 @@ class HeightMap:
             max_variance = 1
 
         # initialize final return value with a given starting height
+        print('adding height 0')
         heightmap = [starting_height]
 
         # account for the extra column we just created

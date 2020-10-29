@@ -28,7 +28,7 @@ class Tile(PointsObject):
 
 class HeightMap:
     """defines a randomly generated heightmap shape"""
-    def __init__(self, length, ceiling=None, terrain_type='gentle_hills'):  # TODO: dict of tile styles
+    def __init__(self, length, ceiling=None, terrain_type='gentle_hills', tile_styles=None):
         """
         generates and initializes the HeightMap's list of heights and a 2D representation
         :param length: length of height list to generate. First column is set to the axis value of 0 and last column
@@ -36,8 +36,11 @@ class HeightMap:
         :param ceiling: max height of sky and height of walls
         :param terrain_type: type of terrain to simulate. Default is gentle hills
         """
-        self._GROUND_TILE = Tile('*')
-        self._SKY_TILE = Tile(' ')
+        if tile_styles is None:
+            tile_styles = {'ground': '*', 'sky': ' '}
+
+        self._GROUND_TILE = Tile(tile_styles['ground'])
+        self._SKY_TILE = Tile(tile_styles['sky'])
         self._WALL_VARIANCE = 1  # how much higher walls are than the apex. If ceiling is provided, walls == ceiling
 
         # if ceiling provided by caller, use that. Else, use the generated apex + 1 as the ceiling
@@ -240,5 +243,5 @@ class HeightMap:
 
 if __name__ == '__main__':
     # test
-    heightmap = HeightMap(10, terrain_type='mountains')
+    heightmap = HeightMap(10, terrain_type='mountains', tile_styles={'ground': '0', 'sky': ' '})
     heightmap.print()

@@ -6,7 +6,7 @@
 
 from random import randrange
 
-
+# TODO: try tile for inheritance
 class Tile:
     """defines a tile used for 2D tilemaps"""
     def __init__(self, style='*'):
@@ -176,7 +176,12 @@ class HeightMap:
 
         column_height = previous_height + variance
 
-        # TODO: enforce given ceiling. If column_height >= ceiling, then reduce column_height by its excess column_height -= excess (column_height - ceiling) and then -1 to leave a gap
+        # enforce given ceiling, if applicable
+        if self._ceiling_provided:
+            if column_height >= self._CEILING:
+                # reduce column_height by its excess, and leave a gap
+                excess = column_height - self._CEILING
+                column_height -= (excess + 1)
 
         print('adding height', column_height)
 
@@ -212,5 +217,5 @@ class HeightMap:
         return self.recursive_generate_heightmap(length, max_variance, heightmap, previous_height=starting_height)
 
 # test
-heightmap = HeightMap(10, 10, terrain_type='mountains')
+heightmap = HeightMap(10, 5, terrain_type='mountains')
 heightmap.print()

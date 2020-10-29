@@ -55,7 +55,7 @@ class HeightMap:
         self._non_negative_heights = self._height_values.copy()
         for height in self._height_values:
             if height < 0:
-                # shift to nonzero values by adding lowest value to all
+                # shift to nonzero values by adding lowest value to all (guaranteed to be <= 0)
                 nadir = self.get_lowest_point(self._height_values)
                 self._non_negative_heights = [value - nadir for value in self._height_values]
                 break  # for efficiency
@@ -188,20 +188,28 @@ class HeightMap:
 
         column_height = previous_height + variance
 
+        # add the new column
+        heightmap.append(column_height)
+
         # enforce given ceiling, if applicable
         if self._ceiling_provided:
-            #
+            # make sure column is not higher than given ceiling
             if column_height >= self._CEILING:
                 # reduce column_height by its excess, and leave a gap
                 excess = column_height - self._CEILING
                 column_height -= (excess + 1)
 
-            # TODO: for wider ranges, enforce range is not more than ceiling, since nadir will be added to highest value
+            # for wider ranges, enforce range is not more than ceiling, since nadir will be added to highest value
+            heights_range = max(heightmap) + abs(min(heightmap))
+            if heights_range >= self._CEILING:
+                # reduce range by column_height's excess (positive or negative), and leave a gap
+                excess = heights_range - self._CEILING
+                if column_height >= 0:
+                    heightmap[-1] -= (excess + 1)
+                else:
+                    heightmap[-1] += (excess + 1)
 
-        print('adding height', column_height)
-
-        # add the new column
-        heightmap.append(column_height)
+        print('added height', heightmap[-1])
 
         # heightmap array mutated in-place on the way down the recursion rabbit hole
         return self.recursive_generate_heightmap(length, max_variance, heightmap, previous_height=column_height)
@@ -232,5 +240,5 @@ class HeightMap:
         return self.recursive_generate_heightmap(length, max_variance, heightmap, previous_height=starting_height)
 
 # test
-heightmap = HeightMap(10, 5, terrain_type='mountains')
+heightmap = HeightMap(10, 2, terrain_type='mountains')
 heightmap.print()

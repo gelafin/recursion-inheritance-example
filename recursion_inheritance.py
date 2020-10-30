@@ -243,5 +243,5 @@ class HeightMap:
 
 if __name__ == '__main__':
     # test
-    heightmap = HeightMap(10, terrain_type='mountains', tile_styles={'ground': '0', 'sky': ' '})
+    heightmap = HeightMap(10, terrain_type='gentle_hills', tile_styles={'ground': '*', 'sky': '-'})
     heightmap.print()
